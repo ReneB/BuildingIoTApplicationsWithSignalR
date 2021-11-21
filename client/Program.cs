@@ -1,5 +1,9 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
 
+static async Task Ping(HubConnection connection, string deviceId) {
+    await connection.SendAsync(nameof(Ping), deviceId);
+}
+
 int pingDelayInSeconds = 30;
 
 var identifier = Guid.NewGuid().ToString();
@@ -14,13 +18,13 @@ await connection.StartAsync();
 Console.WriteLine("Connection established");
 
 while (true) {
-    await Task.Delay(pingDelayInSeconds * 1000);
-
     if (connection.State == HubConnectionState.Connected) {
         Console.WriteLine("Ping!");
 
-        await connection.SendAsync("Ping", identifier);
+        await Ping(connection, identifier);
     } else {
         Console.WriteLine("Connection down; skipping ping.");
     }
+
+    await Task.Delay(pingDelayInSeconds * 1000);
 }
