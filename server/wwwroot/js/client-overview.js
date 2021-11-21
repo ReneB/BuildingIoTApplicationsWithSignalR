@@ -17,7 +17,7 @@ function renderClientList() {
     });
 }
 
-connection.on("RegisterDevicePresence", function (deviceId, timestamp) {
+connection.on("RegisterDevicePresence", (deviceId, timestamp) => {
     var knownClient = clients.find((client) => client.id === deviceId);
     if (knownClient) {
         knownClient.lastSeen = new Date(timestamp);
@@ -29,6 +29,12 @@ connection.on("RegisterDevicePresence", function (deviceId, timestamp) {
 
         clients.push(newClient);
     }
+
+    renderClientList();
+});
+
+connection.on("RegisterDeviceOffline", (deviceId) => {
+    clients = clients.filter((client) => client.id !== deviceId);
 
     renderClientList();
 });

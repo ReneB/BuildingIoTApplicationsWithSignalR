@@ -6,6 +6,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 builder.Services.AddSignalR();
 
+builder.Services.AddSingleton<Server.Hubs.Services.ConnectedClientRegistry>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
