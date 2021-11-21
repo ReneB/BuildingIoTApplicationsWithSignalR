@@ -5,6 +5,7 @@ static async Task Ping(HubConnection connection, string deviceId) {
 }
 
 int pingDelayInSeconds = 30;
+int initialRetryDelayInSeconds = 5;
 
 var identifier = Guid.NewGuid().ToString();
 
@@ -13,7 +14,14 @@ var connection = new HubConnectionBuilder()
     .WithAutomaticReconnect()
     .Build();
 
-await connection.StartAsync();
+while (connection.State != HubConnectionState.Connected) {
+    try {
+        await connection.StartAsync();
+    } catch (HttpRequestException) {
+        Console.WriteLine($"Failed to establish connection, will retry in {initialRetryDelayInSeconds} seconds");
+        await Task.Delay(initialRetryDelayInSeconds * 1000);
+    }
+}
 
 Console.WriteLine("Connection established");
 
