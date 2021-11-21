@@ -37,6 +37,8 @@ namespace Server.Hubs {
             if (deviceId != default) {
                 await Masters.RegisterDeviceOffline(deviceId);
             }
+
+            await base.OnDisconnectedAsync(exception);
         }
     }
 }
