@@ -8,6 +8,7 @@ builder.Services.AddRazorPages();
 builder.Services.AddSignalR();
 
 builder.Services.Configure<AirportOptions>(builder.Configuration.GetSection(AirportOptions.ConfigKey));
+builder.Services.Configure<ScheduleOptions>(builder.Configuration.GetSection(ScheduleOptions.ConfigKey));
 
 builder.Services.AddSingleton<Server.Hubs.Services.ConnectedClientRegistry>();
 
