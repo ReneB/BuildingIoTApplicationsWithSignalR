@@ -1,3 +1,4 @@
+using Server.Configuration;
 using Server.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -5,6 +6,8 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddSignalR();
+
+builder.Services.Configure<AirportOptions>(builder.Configuration.GetSection(AirportOptions.ConfigKey));
 
 builder.Services.AddSingleton<Server.Hubs.Services.ConnectedClientRegistry>();
 
