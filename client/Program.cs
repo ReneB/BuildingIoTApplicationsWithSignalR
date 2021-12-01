@@ -25,6 +25,8 @@ while (connection.State != HubConnectionState.Connected) {
 
 Console.WriteLine("Connection established");
 
+connection.On<string>(nameof(Client.Messages.Announce), Console.WriteLine);
+
 while (true) {
     if (connection.State == HubConnectionState.Connected) {
         Console.WriteLine("Ping!");
@@ -35,4 +37,10 @@ while (true) {
     }
 
     await Task.Delay(pingDelayInSeconds * 1000);
+}
+
+namespace Client {
+    public enum Messages {
+        Announce
+    }
 }
