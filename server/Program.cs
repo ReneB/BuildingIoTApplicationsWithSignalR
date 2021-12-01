@@ -11,6 +11,11 @@ builder.Services.Configure<AirportOptions>(builder.Configuration.GetSection(Airp
 builder.Services.Configure<ScheduleOptions>(builder.Configuration.GetSection(ScheduleOptions.ConfigKey));
 
 builder.Services.AddSingleton<Server.Hubs.Services.ConnectedClientRegistry>();
+builder.Services.AddSingleton<Server.Services.AnnouncementLog>();
+
+builder.Services.AddTransient<Server.Services.ScheduleFetcher>();
+
+builder.Services.AddHostedService<Server.HostedServices.ScheduleProcessor>();
 
 var app = builder.Build();
 

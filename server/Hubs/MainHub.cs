@@ -3,6 +3,7 @@ using Server.Hubs.Services;
 
 namespace Server.Hubs {
     public interface IDevice {
+        Task Announce(string announcement);
         Task RegisterDevicePresence(string deviceId, DateTime timestamp);
         Task RegisterDeviceOffline(string deviceId);
     }
