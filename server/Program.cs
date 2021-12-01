@@ -1,4 +1,5 @@
 using Server.Configuration;
+using Server.Configuration.Test;
 using Server.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,6 +17,13 @@ builder.Services.AddSingleton<Server.Services.AnnouncementLog>();
 builder.Services.AddTransient<Server.Services.ScheduleFetcher>();
 
 builder.Services.AddHostedService<Server.HostedServices.ScheduleProcessor>();
+
+if (builder.Environment.EnvironmentName == Microsoft.Extensions.Hosting.Environments.Development) {
+    builder.Services.Configure<TimeBaseOptions>(builder.Configuration.GetSection(TimeBaseOptions.ConfigKey));
+    builder.Services.AddTransient<Server.Services.ITimeService, Server.Services.TestTimeService>();
+} else {
+    builder.Services.AddTransient<Server.Services.ITimeService, Server.Services.TimeService>();
+}
 
 var app = builder.Build();
 

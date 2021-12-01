@@ -15,13 +15,15 @@ namespace Server.HostedServices {
         private readonly int GateOpenAnnouncementTimeOffsetInMinutes = -60;
         private readonly int FinalCallAnnouncementTimeOffsetInMinutes = -30;
         private readonly AnnouncementLog logbook;
+        private readonly ITimeService timeService;
         private readonly IHubContext<MainHub, IDevice> hubContext;
 
-        public ScheduleProcessor(ILogger<ScheduleProcessor> logger, ScheduleFetcher scheduleFetcher, IOptions<AirportOptions> airportOptions, AnnouncementLog logbook, IHubContext<MainHub, IDevice> hubContext) {
+        public ScheduleProcessor(ILogger<ScheduleProcessor> logger, ScheduleFetcher scheduleFetcher, IOptions<AirportOptions> airportOptions, AnnouncementLog logbook, ITimeService timeService, IHubContext<MainHub, IDevice> hubContext) {
             this.logger = logger;
             this.scheduleFetcher = scheduleFetcher;
             this.airportOptions = airportOptions.Value;
             this.logbook = logbook;
+            this.timeService = timeService;
             this.hubContext = hubContext;
         }
 
@@ -50,7 +52,7 @@ namespace Server.HostedServices {
                 .SelectMany(ExtractPlaneMovements)
                 .Where(movement => movement.Airport == airportOptions.Current)
                 .SelectMany(PrepareAnnouncements)
-                .Where(announcement => announcement.Timestamp < DateTime.Now && !logbook.HasBeenBroadcast(announcement))
+                .Where(announcement => announcement.Timestamp < timeService.Now && !logbook.HasBeenBroadcast(announcement))
                 .OrderBy(announcement => announcement.Timestamp);
 
             foreach (var announcement in upcomingAnnouncements) {
