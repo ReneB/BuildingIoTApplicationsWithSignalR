@@ -3,7 +3,7 @@ using Server.Hubs.Services;
 
 namespace Server.Hubs {
     public interface IDevice {
-        Task Announce(string announcement);
+        Task Announce(string announcementId, string announcementText, byte[] announcementMp3);
         Task RegisterDevicePresence(string deviceId, DateTime timestamp);
         Task RegisterDeviceOffline(string deviceId);
     }

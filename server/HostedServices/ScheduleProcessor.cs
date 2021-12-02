@@ -17,14 +17,22 @@ namespace Server.HostedServices {
         private readonly AnnouncementLog logbook;
         private readonly ITimeService timeService;
         private readonly IHubContext<MainHub, IDevice> hubContext;
+        private readonly AnnouncementAudioCreator announcementAudioCreator;
 
-        public ScheduleProcessor(ILogger<ScheduleProcessor> logger, ScheduleFetcher scheduleFetcher, IOptions<AirportOptions> airportOptions, AnnouncementLog logbook, ITimeService timeService, IHubContext<MainHub, IDevice> hubContext) {
+        public ScheduleProcessor(ILogger<ScheduleProcessor> logger,
+                                 ScheduleFetcher scheduleFetcher,
+                                 IOptions<AirportOptions> airportOptions,
+                                 AnnouncementLog logbook,
+                                 ITimeService timeService,
+                                 IHubContext<MainHub, IDevice> hubContext,
+                                 AnnouncementAudioCreator announcementAudioCreator) {
             this.logger = logger;
             this.scheduleFetcher = scheduleFetcher;
             this.airportOptions = airportOptions.Value;
             this.logbook = logbook;
             this.timeService = timeService;
             this.hubContext = hubContext;
+            this.announcementAudioCreator = announcementAudioCreator;
         }
 
         public Task StartAsync(CancellationToken cancellationToken) {
@@ -56,9 +64,15 @@ namespace Server.HostedServices {
                 .OrderBy(announcement => announcement.Timestamp);
 
             foreach (var announcement in upcomingAnnouncements) {
-                logbook.RegisterAsDone(announcement);
+                var audioFileName = await announcementAudioCreator.CreateAudioFor(announcement);
 
-                await hubContext.Clients.All.Announce(announcement.Text);
+                if (audioFileName == null) {
+                    continue;
+                }
+
+                await hubContext.Clients.All.Announce(announcement.Id, announcement.Text, File.ReadAllBytes(audioFileName));
+
+                logbook.RegisterAsDone(announcement);
             }
         }
 

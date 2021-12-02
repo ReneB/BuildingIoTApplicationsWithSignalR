@@ -25,7 +25,17 @@ while (connection.State != HubConnectionState.Connected) {
 
 Console.WriteLine("Connection established");
 
-connection.On<string>(nameof(Client.Messages.Announce), Console.WriteLine);
+connection.On<string, string, byte[]>(nameof(Client.Messages.Announce), async (announcementId, announcementText, byteArrayMp3) => {
+    Console.WriteLine($"Receiving announcement: {announcementText}");
+
+    var fileName = $"Temp/{announcementId}.mp3";
+    await File.WriteAllBytesAsync(fileName, byteArrayMp3);
+
+    Console.WriteLine($"Reassembled incoming announcement as {fileName}");
+
+    var player = new NetCoreAudio.Player();
+    await player.Play(fileName).WaitAsync(TimeSpan.FromSeconds(30));
+});
 
 while (true) {
     if (connection.State == HubConnectionState.Connected) {
