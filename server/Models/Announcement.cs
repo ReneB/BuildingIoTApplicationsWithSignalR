@@ -3,18 +3,20 @@ namespace Server.Models {
         public abstract string Id { get; }
         public DateTime Timestamp { get; set; }
         public abstract string Text { get; }
+        public abstract int Gate { get; }
     }
 
     public abstract record Announcement<T> : Announcement where T : PlaneMovement {
         protected T planeMovement;
 
         public override string Id => $"{planeMovement.Id}-{GetType().Name}";
+        public override int Gate => planeMovement.Gate;
 
         protected Announcement(T planeMovement) {
             this.planeMovement = planeMovement;
         }
-
     }
+
     public record ArrivalAnnouncement : Announcement<Models.Arrival> {
         public ArrivalAnnouncement(Arrival arr) : base(arr) {}
 

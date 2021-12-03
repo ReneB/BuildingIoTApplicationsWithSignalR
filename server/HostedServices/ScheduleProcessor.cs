@@ -18,6 +18,7 @@ namespace Server.HostedServices {
         private readonly ITimeService timeService;
         private readonly IHubContext<MainHub, IDevice> hubContext;
         private readonly AnnouncementAudioCreator announcementAudioCreator;
+        private readonly GateToGroupMap gateToGroupMap;
 
         public ScheduleProcessor(ILogger<ScheduleProcessor> logger,
                                  ScheduleFetcher scheduleFetcher,
@@ -25,7 +26,8 @@ namespace Server.HostedServices {
                                  AnnouncementLog logbook,
                                  ITimeService timeService,
                                  IHubContext<MainHub, IDevice> hubContext,
-                                 AnnouncementAudioCreator announcementAudioCreator) {
+                                 AnnouncementAudioCreator announcementAudioCreator,
+                                 GateToGroupMap gateToGroupMap) {
             this.logger = logger;
             this.scheduleFetcher = scheduleFetcher;
             this.airportOptions = airportOptions.Value;
@@ -33,6 +35,7 @@ namespace Server.HostedServices {
             this.timeService = timeService;
             this.hubContext = hubContext;
             this.announcementAudioCreator = announcementAudioCreator;
+            this.gateToGroupMap = gateToGroupMap;
         }
 
         public Task StartAsync(CancellationToken cancellationToken) {
@@ -64,15 +67,11 @@ namespace Server.HostedServices {
                 .OrderBy(announcement => announcement.Timestamp);
 
             foreach (var announcement in upcomingAnnouncements) {
-                var audioFileName = await announcementAudioCreator.CreateAudioFor(announcement);
+                var success = await DispatchAnnouncement(announcement);
 
-                if (audioFileName == null) {
-                    continue;
+                if (success) {
+                    logbook.RegisterAsDone(announcement);
                 }
-
-                await hubContext.Clients.All.Announce(announcement.Id, announcement.Text, File.ReadAllBytes(audioFileName));
-
-                logbook.RegisterAsDone(announcement);
             }
         }
 
@@ -122,6 +121,32 @@ namespace Server.HostedServices {
                     return new List<Announcement>();
                 }
             }
+        }
+
+        protected async Task<bool> DispatchAnnouncement(Announcement announcement) {
+            var audioFileName = await announcementAudioCreator.CreateAudioFor(announcement);
+
+            if (audioFileName == null) {
+                return false;
+            }
+
+            switch (announcement) {
+                case ArrivalAnnouncement: {
+                    await hubContext.Clients.All.Announce(announcement.Id, announcement.Text, File.ReadAllBytes(audioFileName));
+                    break;
+                }
+                default: {
+                    var groupName = gateToGroupMap.GroupForGate(announcement.Gate);
+
+                    if (groupName != null) {
+                        await hubContext.Clients.Group(groupName).Announce(announcement.Id, announcement.Text, File.ReadAllBytes(audioFileName));
+                    }
+
+                    break;
+                }
+            }
+
+            return true;
         }
     }
 }
