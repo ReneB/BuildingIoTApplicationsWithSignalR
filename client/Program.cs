@@ -7,7 +7,7 @@ public class Client {
     private const int initialRetryDelayInSeconds = 5;
 
     private HubConnection connection;
-    private string identifier = Guid.NewGuid().ToString();
+    private readonly string identifier = Guid.NewGuid().ToString();
     private string url = "https://localhost:5001/main";
 
     public Client() {
@@ -18,6 +18,10 @@ public class Client {
     }
 
     public async Task Start() {
+        Console.WriteLine($"Current client id: {identifier}");
+
+        AddEventListeners();
+
         await Connect();
 
         await KeepAlive();
@@ -27,6 +31,8 @@ public class Client {
         while (connection.State != HubConnectionState.Connected) {
             try {
                 await connection.StartAsync();
+
+                await RegisterDevice();
             } catch (HttpRequestException) {
                 Console.WriteLine($"Failed to establish connection, will retry in {initialRetryDelayInSeconds} seconds");
                 await Task.Delay(initialRetryDelayInSeconds * 1000);
@@ -41,7 +47,7 @@ public class Client {
             if (connection.State == HubConnectionState.Connected) {
                 Console.WriteLine("Ping!");
 
-                await Ping(connection, identifier);
+                await Ping();
             } else {
                 Console.WriteLine("Connection down; skipping ping.");
             }
@@ -50,8 +56,9 @@ public class Client {
         }
     }
 
-    public void AddEventListeners(HubConnection connection) {
+    public void AddEventListeners() {
         connection.On<string, string, byte[]>(nameof(Announce), Announce);
+        connection.Reconnected += async (_) => await RegisterDevice();
     }
 
     private async Task Announce(string announcementId, string announcementText, byte[] byteArrayMp3) {
@@ -66,7 +73,11 @@ public class Client {
         await player.Play(fileName).WaitAsync(TimeSpan.FromSeconds(30));
     }
 
-    private async Task Ping(HubConnection connection, string deviceId) {
-        await connection.SendAsync(nameof(Ping), deviceId);
+    private async Task Ping() {
+        await connection.SendAsync(nameof(Ping));
+    }
+
+    private async Task RegisterDevice() {
+        await connection.SendAsync(nameof(RegisterDevice), identifier);
     }
 }

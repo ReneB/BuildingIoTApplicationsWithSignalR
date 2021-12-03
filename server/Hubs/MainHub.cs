@@ -22,10 +22,16 @@ namespace Server.Hubs {
             }
         }
 
-        public async Task Ping(string deviceId) {
-            clientRegistry.Register(Context.ConnectionId, deviceId);
+        public async Task Ping() {
+            var deviceId = clientRegistry.FindDeviceId(Context.ConnectionId);
 
-            await Masters.RegisterDevicePresence(deviceId, DateTime.UtcNow);
+            if (deviceId != null) {
+                await Masters.RegisterDevicePresence(deviceId, DateTime.UtcNow);
+            }
+        }
+
+        public void RegisterDevice(string deviceId) {
+            clientRegistry.Register(Context.ConnectionId, deviceId);
         }
 
         public async Task RegisterAsMaster() {
