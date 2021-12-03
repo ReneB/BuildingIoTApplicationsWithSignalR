@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.SignalR;
 using Server.Hubs.Services;
+using Server.Services;
 
 namespace Server.Hubs {
     public interface IDevice {
@@ -11,9 +12,11 @@ namespace Server.Hubs {
     public class MainHub : Hub<IDevice> {
         private const string groupNameForMasters = "Masters";
         private readonly ConnectedClientRegistry clientRegistry;
+        private readonly GateToGroupMap gateToGroupMap;
 
-        public MainHub(ConnectedClientRegistry clientRegistry) {
+        public MainHub(ConnectedClientRegistry clientRegistry, GateToGroupMap gateToGroupMap) {
             this.clientRegistry = clientRegistry;
+            this.gateToGroupMap = gateToGroupMap;
         }
 
         protected IDevice Masters {
@@ -30,8 +33,14 @@ namespace Server.Hubs {
             }
         }
 
-        public void RegisterDevice(string deviceId, int gateNumber) {
+        public async Task RegisterDevice(string deviceId, int gateNumber) {
             clientRegistry.Register(Context.ConnectionId, deviceId);
+
+            var group = gateToGroupMap.GroupForGate(gateNumber);
+
+            if (group != null) {
+                await Groups.AddToGroupAsync(Context.ConnectionId, group);
+            }
         }
 
         public async Task RegisterAsMaster() {
