@@ -75,7 +75,7 @@ namespace Server.HostedServices {
             }
         }
 
-        protected IEnumerable<PlaneMovement> ExtractPlaneMovements(Flight record) {
+        protected static IEnumerable<PlaneMovement> ExtractPlaneMovements(Flight record) {
             var depTime = new DateTime(record.Year, record.Month, record.DayOfMonth, record.CRSDepTime / 100, record.CRSDepTime % 100, 0);
             var departure = new Departure {
                 Timestamp = depTime,
