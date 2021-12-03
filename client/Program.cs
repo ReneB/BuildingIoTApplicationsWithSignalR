@@ -8,6 +8,7 @@ public class Client {
 
     private HubConnection connection;
     private readonly string identifier = Guid.NewGuid().ToString();
+    private readonly int gateNumber = RandomGateNumber();
     private string url = "https://localhost:5001/main";
 
     public Client() {
@@ -19,6 +20,7 @@ public class Client {
 
     public async Task Start() {
         Console.WriteLine($"Current client id: {identifier}");
+        Console.WriteLine($"Gate number: {gateNumber}");
 
         AddEventListeners();
 
@@ -78,6 +80,10 @@ public class Client {
     }
 
     private async Task RegisterDevice() {
-        await connection.SendAsync(nameof(RegisterDevice), identifier);
+        await connection.SendAsync(nameof(RegisterDevice), identifier, gateNumber);
+    }
+
+    private static int RandomGateNumber() {
+        return 1 + new Random().Next(10);
     }
 }

@@ -30,7 +30,7 @@ namespace Server.Hubs {
             }
         }
 
-        public void RegisterDevice(string deviceId) {
+        public void RegisterDevice(string deviceId, int gateNumber) {
             clientRegistry.Register(Context.ConnectionId, deviceId);
         }
 
