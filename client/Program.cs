@@ -3,8 +3,8 @@
 await new Client().Start();
 
 public class Client {
-    private const int pingDelayInSeconds = 30;
-    private const int initialRetryDelayInSeconds = 5;
+    private const TimeSpan pingDelay = TimeSpan.FromSeconds(30);
+    private const TimeSpan initialRetryDelay = TimeSpan.FromSeconds(5);
 
     private HubConnection connection;
     private readonly string identifier = Guid.NewGuid().ToString();
@@ -36,8 +36,8 @@ public class Client {
 
                 await RegisterDevice();
             } catch (HttpRequestException) {
-                Console.WriteLine($"Failed to establish connection, will retry in {initialRetryDelayInSeconds} seconds");
-                await Task.Delay(initialRetryDelayInSeconds * 1000);
+                Console.WriteLine($"Failed to establish connection, will retry in {initialRetryDelay.Seconds} seconds");
+                await Task.Delay(initialRetryDelay);
             }
         }
 
@@ -54,7 +54,7 @@ public class Client {
                 Console.WriteLine("Connection down; skipping ping.");
             }
 
-            await Task.Delay(pingDelayInSeconds * 1000);
+            await Task.Delay(pingDelay);
         }
     }
 
