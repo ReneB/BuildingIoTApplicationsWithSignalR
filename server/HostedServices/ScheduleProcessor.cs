@@ -18,7 +18,7 @@ namespace Server.HostedServices {
         private readonly ITimeService timeService;
         private readonly IHubContext<MainHub, IDevice> hubContext;
         private readonly AnnouncementAudioCreator announcementAudioCreator;
-        private readonly GateToGroupMap gateToGroupMap;
+        private readonly ClientToGateMap clientToGateMap;
 
         public ScheduleProcessor(ILogger<ScheduleProcessor> logger,
                                  ScheduleFetcher scheduleFetcher,
@@ -27,7 +27,7 @@ namespace Server.HostedServices {
                                  ITimeService timeService,
                                  IHubContext<MainHub, IDevice> hubContext,
                                  AnnouncementAudioCreator announcementAudioCreator,
-                                 GateToGroupMap gateToGroupMap) {
+                                 ClientToGateMap clientToGateMap) {
             this.logger = logger;
             this.scheduleFetcher = scheduleFetcher;
             this.airportOptions = airportOptions.Value;
@@ -35,7 +35,7 @@ namespace Server.HostedServices {
             this.timeService = timeService;
             this.hubContext = hubContext;
             this.announcementAudioCreator = announcementAudioCreator;
-            this.gateToGroupMap = gateToGroupMap;
+            this.clientToGateMap = clientToGateMap;
         }
 
         public Task StartAsync(CancellationToken cancellationToken) {
@@ -136,10 +136,10 @@ namespace Server.HostedServices {
                     break;
                 }
                 default: {
-                    var groupName = gateToGroupMap.GroupForGate(announcement.Gate);
+                    var connectionId = clientToGateMap.ClientForGate(announcement.Gate);
 
-                    if (groupName != null) {
-                        await hubContext.Clients.Group(groupName).Announce(announcement.Id, announcement.Text, File.ReadAllBytes(audioFileName));
+                    if (connectionId != null) {
+                        await hubContext.Clients.Client(connectionId).Announce(announcement.Id, announcement.Text, File.ReadAllBytes(audioFileName));
                     }
 
                     break;

@@ -8,12 +8,12 @@ namespace Server.Hubs.Services {
             deviceIdToConnectionIdMap[deviceId] = connectionId;
         }
 
-        public string? FindDeviceId(string connectionId) {
-            return connectionIdToDeviceIdMap.GetValueOrDefault(connectionId);
+        public string FindDeviceId(string connectionId) {
+            return connectionIdToDeviceIdMap.GetValueOrDefault(connectionId) ?? throw new Exception($"Connection ${connectionId} does not belong to a registered device");
         }
 
-        public string? FindConnectionId(string deviceId) {
-            return deviceIdToConnectionIdMap.GetValueOrDefault(deviceId);
+        public string FindConnectionId(string deviceId) {
+            return deviceIdToConnectionIdMap.GetValueOrDefault(deviceId) ?? throw new Exception($"Device ${deviceId} does not have a registered connection");
         }
     }
 }

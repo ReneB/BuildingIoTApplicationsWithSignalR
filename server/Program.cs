@@ -15,6 +15,7 @@ builder.Services.Configure<ScheduleOptions>(builder.Configuration.GetSection(Sch
 builder.Services.AddSingleton<Server.Hubs.Services.ConnectedClientRegistry>();
 builder.Services.AddSingleton<Server.Services.AnnouncementLog>();
 builder.Services.AddSingleton<Server.Services.GateToGroupMap>();
+builder.Services.AddSingleton<Server.Services.ClientToGateMap>();
 builder.Services.AddSingleton<Server.Services.AnnouncementAudioCreator>();
 
 builder.Services.AddTransient<Server.Services.ScheduleFetcher>();
