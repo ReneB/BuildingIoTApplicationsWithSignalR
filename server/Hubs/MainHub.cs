@@ -38,9 +38,7 @@ namespace Server.Hubs {
 
             var group = gateToGroupMap.GroupForGate(gateNumber);
 
-            if (group != null) {
-                await Groups.AddToGroupAsync(Context.ConnectionId, group);
-            }
+            await Groups.AddToGroupAsync(Context.ConnectionId, group);
         }
 
         public async Task RegisterAsMaster() {

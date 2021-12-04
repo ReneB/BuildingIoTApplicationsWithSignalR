@@ -9,16 +9,16 @@ namespace Server.Services {
             this.airportOptions = airportOptions.Value;
         }
 
-        public string? GroupForGate(int gateNumber) {
+        public string GroupForGate(int gateNumber) {
             return airportOptions.AreaMap
                 .FirstOrDefault(kvp => kvp.Value.Contains(gateNumber))
-                .Key;
+                .Key ?? throw new Exception($"Gate {gateNumber} not registered at this airport");
         }
 
-        public int[]? GatesForGroup(string group) {
+        public int[] GatesForGroup(string group) {
             var groupIsKnown = airportOptions.AreaMap.TryGetValue(group, out var value);
 
-            return groupIsKnown ? value : default;
+            return groupIsKnown ? value! : throw new Exception($"Group {group} not registered at this airport");
         }
     }
 }
