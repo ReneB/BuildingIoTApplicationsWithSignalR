@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.SignalR.Client;
 using Debug;
+using System;
 
 await new Client.Client().Start();
 
@@ -14,9 +15,9 @@ namespace Client {
         private readonly Queue<string> audioQueue = new();
 
         private readonly HubConnection connection;
-        private readonly string identifier = Guid.NewGuid().ToString();
-        private readonly int gateNumber = RandomGateNumber();
-        private readonly string url = "https://localhost:5001/main";
+        private readonly string identifier = GetDeviceIdentifier();
+        private readonly int gateNumber = GetGateNumber();
+        private readonly string url = GetHubUrl();
         private readonly List<AudioPlayingRecord> peersPlayingAudio = new();
 
         protected bool AudioIsBeingPlayed => peersPlayingAudio.Count > 0;
@@ -31,6 +32,7 @@ namespace Client {
         public async Task Start() {
             DebugConsole.WriteLine($"Current client id: {identifier}");
             DebugConsole.WriteLine($"Gate number: {gateNumber}");
+            DebugConsole.WriteLine($"Hub URL: {url}");
 
             AddEventListeners();
 
@@ -165,6 +167,22 @@ namespace Client {
             DebugConsole.WriteLine("Registering our presence with the server");
 
             await connection.SendAsync(nameof(RegisterDevice), identifier, gateNumber);
+        }
+
+        private static int GetGateNumber() {
+            return int.TryParse(Environment.GetEnvironmentVariable("GATE_NUMBER"), out var gateNumber) ? gateNumber : RandomGateNumber();
+        }
+
+        private static string GetDeviceIdentifier() {
+            var deviceId = Environment.GetEnvironmentVariable("DEVICE_ID");
+
+            return string.IsNullOrEmpty(deviceId) ? Guid.NewGuid().ToString() : deviceId;
+        }
+
+        private static string GetHubUrl() {
+            var url = Environment.GetEnvironmentVariable("HUB_URL");
+
+            return string.IsNullOrEmpty(url) ? "https://localhost:5001/main" : url;
         }
 
         private static int RandomGateNumber() {
