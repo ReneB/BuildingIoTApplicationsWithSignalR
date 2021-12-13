@@ -1,0 +1,17 @@
+version: '3.3'
+services:
+  client:
+    build:
+      context: .
+      dockerfile: client/Dockerfile
+
+    environment:
+      - DEVICE_ID="${DEVICE_ID}"
+      - GATE_NUMBER=$GATE_NUMBER
+      - HUB_URL="${HUB_URL}"
+    restart: unless-stopped
+    devices:
+      - /dev/snd
+    volumes:
+      - /usr/bin/aplay
+    image: client
